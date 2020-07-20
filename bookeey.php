@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Bookeey Payment Gateway Library
- * @version 1.0.0
+ * @version 2.0.0
  * @author Writerz Wall
  * @link https://writerzwall.com
  * 
@@ -22,6 +22,8 @@
  * 
  */
 
+const APP_VERSION = "2.0.0";
+const API_VERSION = "2.0.0";
 
 ///////////////////////////////////////
 //Payment Option Codes. DO NOT CHANGE//
@@ -30,6 +32,7 @@
 const KNET_CODE = "knet";
 const CREDIT_CODE = "credit";
 const BOOKEEY_CODE = "Bookeey";
+const AMEX_CODE = "amex";
 
 
 ///////////////////////////////////////////////////////////
@@ -39,6 +42,7 @@ const BOOKEEY_CODE = "Bookeey";
 const KNET_TITLE = "KNET";
 const CREDIT_TITLE = "Credit Card";
 const BOOKEEY_TITLE = "Bookeey PG";
+const AMEX_TITLE = "AMEX";
 
 
 /////////////////////////////////////////////
@@ -105,42 +109,42 @@ const SECRET_KEY = "";
  * Type: String
  * Possible Values: Enter the Success Page URL as per your project.
  */
-const SUCCESS_URL = "success.php";
+const SUCCESS_URL = "http://localhost:9090/bookeey_library/success.php";
 
 /**
  * Failure URL
  * Type: String
  * Possible Values: Enter the Failure Page URL as per your project.
  */
-const FAILURE_URL = "failure.php";
+const FAILURE_URL = "http://localhost:9090/bookeey_library/failure.php";
 
 /**
  * Test Bookeey Payment Gateway URL
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const TEST_BOOKEEY_PAYMENT_GATEWAY_URL = "https://demo.bookeey.com/portal/bookeeyPg";
+const TEST_BOOKEEY_PAYMENT_GATEWAY_URL = "https://apps.bookeey.com/pgapi/api/payment/requestLink";
 
 /**
  * Live Bookeey Payment Gateway URL
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const LIVE_BOOKEEY_PAYMENT_GATEWAY_URL = "https://www.bookeey.com/portal/bookeeyPg";
+const LIVE_BOOKEEY_PAYMENT_GATEWAY_URL = "https://pg.bookeey.com/internalapi/api/payment/requestLink";
 
 /**
  * Test Bookeey Payment Requery URL
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const TEST_BOOKEEY_PAYMENT_REQUERY_URL = "https://demo.bookeey.com/portal/paymentrequery";
+const TEST_BOOKEEY_PAYMENT_REQUERY_URL = "https://apps.bookeey.com/pgapi/api/payment/paymentstatus";
 
 /**
  * Live Bookeey Payment Requery URL
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const LIVE_BOOKEEY_PAYMENT_REQUERY_URL = "https://www.bookeey.com/portal/paymentrequery";
+const LIVE_BOOKEEY_PAYMENT_REQUERY_URL = "https://pg.bookeey.com/internalapi/api/payment/paymentstatus";
 
 /**
  * Payment Options
@@ -162,6 +166,11 @@ const PAYMENT_OPTIONS = array(
         'is_active' => 1,
         'title' => BOOKEEY_TITLE,
         'code' => BOOKEEY_CODE
+    ),
+    array(
+        'is_active' => 1,
+        'title' => AMEX_TITLE,
+        'code' => AMEX_CODE
     )
 );
 
@@ -183,6 +192,9 @@ class bookeey {
     var $paymentOptions;
     var $amount;
     var $selectedPaymentOption;
+    var $orderId;
+    var $payerName;
+    var $payerPhone;
 
     function __construct() {
         $this->isEnable = IS_ENABLE;
@@ -199,8 +211,11 @@ class bookeey {
         $this->liveBookeeyPaymentRequeryUrl = LIVE_BOOKEEY_PAYMENT_REQUERY_URL;
         $this->defaultPaymentOption = DEFAULT_PAYMENT_OPTION;
         $this->paymentOptions = PAYMENT_OPTIONS;
-        $this->amount = 2.5;
-        $this->selectedPaymentOption = '';
+        $this->amount = '';
+        $this->selectedPaymentOption = $this->defaultPaymentOption;
+        $this->orderId = '';
+        $this->payerName = '';
+        $this->payerPhone = '';
     }
 
 
@@ -369,6 +384,59 @@ class bookeey {
 
 
     /**
+     * Get Order Id
+     * Type: Integer | String
+     * Note: Order ID should be unique for each transaction.
+     */
+    function getOrderId() {
+        return $this->orderId;
+    }
+
+    /**
+     * Set Order Id
+     * Type: Integer | String
+     * Note: Order ID should be unique for each transaction.
+     */
+    function setOrderId($data) {
+        $this->orderId = $data;
+    }
+
+
+    /**
+     * Get Payer Name
+     * Type: String
+     */
+    function getPayerName() {
+        return $this->payerName;
+    }
+
+    /**
+     * Set Payer Name
+     * Type: String
+     */
+    function setPayerName($data) {
+        $this->payerName = $data;
+    }
+    
+
+    /**
+     * Get Payer Phone
+     * Type: String
+     */
+    function getPayerPhone() {
+        return $this->payerPhone;
+    }
+
+    /**
+     * Set Payer Phone
+     * Type: String
+     */
+    function setPayerPhone($data) {
+        $this->payerPhone = $data;
+    }
+
+
+    /**
      * Get Default Payment Option
      * Return Type: String
      */
@@ -462,98 +530,144 @@ class bookeey {
      * Get Bookeey Payment Gateway URL as per Active Mode
      * Type: String
      */
-    function getBookeyPaymentGatewayUrl() {
+    function getBookeeyPaymentGatewayUrl() {
         $isTestModeEnable = $this->isTestModeEnable();
 
         if($isTestModeEnable) {
-            $bookeyPaymentGatewayUrl = $this->getTestBookeeyPaymentGatewayUrl();
+            $bookeeyPaymentGatewayUrl = $this->getTestBookeeyPaymentGatewayUrl();
         }else{
-            $bookeyPaymentGatewayUrl = $this->getLiveBookeeyPaymentGatewayUrl();
+            $bookeeyPaymentGatewayUrl = $this->getLiveBookeeyPaymentGatewayUrl();
         }
         
-        return $bookeyPaymentGatewayUrl;
+        return $bookeeyPaymentGatewayUrl;
     }
 
     /**
      * Get Bookeey Payment Requery URL as per Active Mode
      * Type: String
      */
-    function getBookeyPaymentRequeryUrl() {
+    function getBookeeyPaymentRequeryUrl() {
         $isTestModeEnable = $this->isTestModeEnable();
 
         if($isTestModeEnable) {
-            $bookeyPaymentRequeryUrl = $this->getTestBookeeyPaymentRequeryUrl();
+            $bookeeyPaymentRequeryUrl = $this->getTestBookeeyPaymentRequeryUrl();
         }else{
-            $bookeyPaymentRequeryUrl = $this->getLiveBookeeyPaymentRequeryUrl();
+            $bookeeyPaymentRequeryUrl = $this->getLiveBookeeyPaymentRequeryUrl();
         }
         
-        return $bookeyPaymentRequeryUrl;
+        return $bookeeyPaymentRequeryUrl;
     }
 
 
     /**
-     * Prepare and Get Post Parameters for the Payment
-     * Type: Array
+     * Initiate Payment
+     * Argument: Array (Pass the sub merchant id(s) and amount for each transaction in the array)
      */
-    function preparePostParams(){
+    function initiatePayment($transactionDetails){
+        session_start();
+        $sessionId = session_id();
+        $systemInfo = $this->systemInfo();
+        $browser = $this->browser();
+        $payerName = $this->getPayerName();
+        $payerPhone = $this->getPayerPhone();
         $mid = $this->getMerchantID();
         $tex = $random_pwd = mt_rand(1000000000000000, 9999999999999999);
         $txnRefNo = $tex;
         $su = $this->getSuccessUrl();
         $fu = $this->getFailureUrl();
         $amt = $this->getAmount();
+        $orderId = $this->getOrderId();
         // $txnTime = "1545633631518";
-        $txnTime = date("ymdHis");
+        // $txnTime = date("ymdHis");
+        $rndnum = rand(10000,99999);
         $crossCat = "GEN";
         $secretKey = $this->getSecretKey();
         $defaultPaymentOption = $this->getDefaultPaymentOption();
         $selectedPaymentOption = $this->getSelectedPaymentOption();
         $paymentoptions = ($selectedPaymentOption == '') ? $defaultPaymentOption : $selectedPaymentOption;
-        $data = "$mid|$txnRefNo|$su|$fu|$amt|$txnTime|$crossCat|$secretKey";
+        $data = "$mid|$txnRefNo|$su|$fu|$amt|$crossCat|$secretKey|$rndnum";
         $hashed = hash('sha512', $data);
+
+        $paymentGatewayUrl = $this->getBookeeyPaymentGatewayUrl();
+
+        $txnDtl = $transactionDetails;
+
+        $txnHdr = array(
+            "PayFor" => "ECom",
+            "Txn_HDR" => $rndnum,
+            "PayMethod" => $paymentoptions,
+            "BKY_Txn_UID" => "",
+            "Merch_Txn_UID" => $orderId,
+            "hashMac" => $hashed
+        );
+
+        $appInfo = array(
+            "APPTyp" => "",
+            "OS" => $systemInfo['os'].' - '.$browser,
+            "DevcType" => $systemInfo['device'],
+            "IPAddrs" => $_SERVER['SERVER_ADDR'],
+            "Country" => "",
+            "AppVer" => APP_VERSION,
+            "UsrSessID" => $sessionId,
+            "APIVer" => API_VERSION
+        );
+
+        $pyrDtl = array(
+            "Pyr_MPhone" => $payerPhone,
+            "Pyr_Name" => $payerName
+        );
+
+        $merchDtl = array(
+            "BKY_PRDENUM" => "ECom",
+            "FURL" => $fu,
+            "MerchUID" => $mid,
+            "SURL" => $su
+        );
+
+        $moreDtl = array(
+            "Cust_Data1" => "",
+            "Cust_Data3" => "",
+            "Cust_Data2" => ""
+        );
         
-        //Form Post Params
-        //Important: The order of the following parameters are ESSENTIAL for the encryption to work.
-        $params['mid']       = $mid;
-        $params['txnRefNo']  = $txnRefNo;
-        $params['surl']      = $su;
-        $params['furl']      = $fu;
-        $params['amt']       = $amt;
-        $params['crossCat']  = $crossCat;
-        $params['hashMac']   = $hashed;
-        $params['status']    = '';
-        $params['code']      = '';
-        $params['msg']       = '';
-        $params['txnid'] = '';
-        $params['txnTime'] = $txnTime;
-        $params['customerHash'] = '';
-        $params['returnHash'] = '';
-        $params['paymentoptions'] = $paymentoptions;
+        $postParams['Do_TxnDtl'] = $txnDtl;
+        $postParams['Do_TxnHdr'] = $txnHdr;
+        $postParams['Do_Appinfo'] = $appInfo;
+        $postParams['Do_PyrDtl'] = $pyrDtl;
+        $postParams['Do_MerchDtl'] = $merchDtl;
+        $postParams['DBRqst'] = "PY_ECom";
+        $postParams['Do_MoreDtl'] = $moreDtl;
 
-        //Encrypt values to create the AuthHash
-        $post_values = "";
-        foreach ($params as $key => $value) {
-            $post_values .= $value;
+        $ch = curl_init();
+
+        $headers = array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        );
+
+        curl_setopt($ch, CURLOPT_URL,$paymentGatewayUrl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postParams));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $serverOutput = curl_exec($ch);
+        $decodeOutput = json_decode($serverOutput, true);
+        curl_close ($ch);
+
+        if (isset($decodeOutput['PayUrl'])) {
+            if ($decodeOutput['PayUrl'] == '') {
+                echo "Error Message: ".$decodeOutput['ErrorMessage'];
+            }else{
+                header("Location: ".$decodeOutput['PayUrl']);
+            }   
+        }else if(isset($decodeOutput['Message'])){
+            echo "Error Message: ".$decodeOutput['Message'];
+        }else{
+            echo "Error<br>";
+            print_r($decodeOutput);
         }
-        $post_values .= $secretKey;
-
-        $params['ShowTransactionResult'] = 0;
-
-        //Adding to the form params the AuthHash
-        $params['AuthHash'] = $this->encryptAndEncode($post_values);
-
-        return $params;
-    }
-
-    /**
-     * Encrypt and Encode the Post Params
-     */
-    function encryptAndEncode($strIn)
-    {
-        //The encryption required by bookeey is SHA-512
-        $result = mb_convert_encoding($strIn, 'UTF-16LE', 'ASCII');
-        $result = hash('sha512', $result);
-        return $result;
     }
 
 
@@ -561,22 +675,128 @@ class bookeey {
      * Get Updated Transaction Status from Bookeey Payment Requery Url
      * Argument: String (Pass the Transaction Id for which you want to get the updated status)
      */
-    function transactionRequery($transactionId){
-        $requeryUrl = $this->getBookeyPaymentRequeryUrl();
+    function getPaymentStatus($orderIds){
+        $requeryUrl = $this->getBookeeyPaymentRequeryUrl();
+
+        $mid = $this->getMerchantID();
+        $rndnum = rand(10000,99999);
+        $secretKey = $this->getSecretKey();
+
+        $data = "$mid|$secretKey|$rndnum";
+        $hashed = hash('sha512', $data);
+
+        $postParams['Mid'] = $mid;
+        $postParams['MerchantTxnRefNo'] = $orderIds;
+        $postParams['HashMac'] = $hashed;
+
         $ch = curl_init();
         $headers = array(
-        'Accept: application/json',
-        'Content-Type: application/json',
+            'Accept: application/json',
+            'Content-Type: application/json',
         );
-        curl_setopt($ch, CURLOPT_URL, $requeryUrl.'?txnId='.$transactionId);
+        curl_setopt($ch, CURLOPT_URL,$requeryUrl);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postParams));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-        $result = curl_exec($ch);
-        $decodedata = json_decode($result, true);
+        $serverOutput = curl_exec($ch);
+        $decodeOutput = json_decode($serverOutput, true);
+        curl_close ($ch);
 
-        return $decodedata;
+        return $decodeOutput;
+    }
+
+
+    /**
+     * Get System information
+     */
+    function systemInfo()
+    {
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $os_platform    = "Unknown OS Platform";
+        $os_array       = array(
+            '/windows nt 10.0/i'    =>  'Windows 10',
+            '/windows phone 8/i'    =>  'Windows Phone 8',
+            '/windows phone os 7/i' =>  'Windows Phone 7',
+            '/windows nt 6.3/i'     =>  'Windows 8.1',
+            '/windows nt 6.2/i'     =>  'Windows 8',
+            '/windows nt 6.1/i'     =>  'Windows 7',
+            '/windows nt 6.0/i'     =>  'Windows Vista',
+            '/windows nt 5.2/i'     =>  'Windows Server 2003/XP x64',
+            '/windows nt 5.1/i'     =>  'Windows XP',
+            '/windows xp/i'         =>  'Windows XP',
+            '/windows nt 5.0/i'     =>  'Windows 2000',
+            '/windows me/i'         =>  'Windows ME',
+            '/win98/i'              =>  'Windows 98',
+            '/win95/i'              =>  'Windows 95',
+            '/win16/i'              =>  'Windows 3.11',
+            '/macintosh|mac os x/i' =>  'Mac OS X',
+            '/mac_powerpc/i'        =>  'Mac OS 9',
+            '/linux/i'              =>  'Linux',
+            '/ubuntu/i'             =>  'Ubuntu',
+            '/iphone/i'             =>  'iPhone',
+            '/ipod/i'               =>  'iPod',
+            '/ipad/i'               =>  'iPad',
+            '/android/i'            =>  'Android',
+            '/blackberry/i'         =>  'BlackBerry',
+            '/webos/i'              =>  'Mobile'
+        );
+
+        $found = false;
+        $device = '';
+
+        foreach ($os_array as $regex => $value) 
+        { 
+            if($found)
+                break;
+            else if (preg_match($regex, $user_agent)) 
+            {
+                $os_platform = $value;
+                $device = !preg_match('/(windows|mac|linux|ubuntu)/i',$os_platform)
+                        ?'MOBILE':(preg_match('/phone/i', $os_platform)?'MOBILE':'SYSTEM');
+            }
+        }
+        $device = !$device? 'SYSTEM':$device;
+
+        return array('os'=>$os_platform,'device'=>$device);
+    }
+
+
+    /**
+     * Get Browser information
+     */
+    function browser() 
+    {
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $browser        =   "Unknown Browser";
+        $browser_array  = array(
+            '/msie/i'       =>  'Internet Explorer',
+            '/firefox/i'    =>  'Mozilla Firefox',
+            '/safari/i'     =>  'Safari',
+            '/chrome/i'     =>  'Google Chrome',
+            '/edge/i'       =>  'Microsoft Edge',
+            '/opera/i'      =>  'Opera',
+            '/netscape/i'   =>  'Netscape',
+            '/maxthon/i'    =>  'Maxthon',
+            '/konqueror/i'  =>  'Konqueror',
+            '/mobile/i'     =>  'Handheld Browser'
+        );
+
+        $found = false;
+
+        foreach ($browser_array as $regex => $value) 
+        { 
+            if($found)
+            break;
+            else if (preg_match($regex, $user_agent,$result)) 
+            {
+                $browser = $value;
+            }
+        }
+
+        return $browser;
     }
 }
 ?>

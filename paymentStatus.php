@@ -15,8 +15,14 @@ ini_set("display_errors", "1");
 error_reporting(E_ALL);
 include_once("bookeey.php");
 $bookeeyPipe = new bookeey;
-$transactionId = ""; // Pass Transaction Id
-$transactionData = $bookeeyPipe->transactionRequery($transactionId);
+$bookeeyPipe->setMerchantID('mer160009');    // Set the Merchant ID
+$bookeeyPipe->setSecretKey('1234567');    // Set the Secret Key
+ // Pass Transaction Ids in the array
+$orderIds = array(
+    "211744346",
+    "272884101"
+);
+$transactionData = $bookeeyPipe->getPaymentStatus($orderIds);
 echo "<pre>";
 print_r($transactionData);
 ?>

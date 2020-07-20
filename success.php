@@ -16,6 +16,7 @@ error_reporting(E_ALL);
 if (isset($_REQUEST['txnId'])) {
     $transactionId = $_REQUEST['txnId'];
     echo "Your transation is successful. Your transaction id is: ".$transactionId;
+    print_r($_REQUEST);
 }else{
     echo "Transaction ID is missing in the response.";
 }

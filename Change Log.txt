@@ -1,2 +1,14 @@
+============== Version 2.0.0 ==============
++ Multivendor Payment API implemented
++ Multiple transaction Requery API implemented
++ AMEX payment option implemented
++ System info implemented - OS Type, Browser Type, Device Type, IP Address, App Version, API Version, Session ID
++ Payer Name and Phone implemented
++ Documentation updated
++ Other minor improvements
+
+- Old Payment API implementation removed
+- Old Transaction Requery API implementation removed
+
 ============== Version 1.0.0 ==============
 + Initial commit
