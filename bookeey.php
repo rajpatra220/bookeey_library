@@ -22,7 +22,7 @@
  * 
  */
 
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.5.0";
 const API_VERSION = "2.0.0";
 
 ///////////////////////////////////////
@@ -123,7 +123,7 @@ const FAILURE_URL = "http://localhost:9090/bookeey_library/failure.php";
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const TEST_BOOKEEY_PAYMENT_GATEWAY_URL = "https://apps.bookeey.com/pgapi/api/payment/requestLink";
+const TEST_BOOKEEY_PAYMENT_GATEWAY_URL = "https://demo.bookeey.com/pgapi/api/payment/requestLink";
 
 /**
  * Live Bookeey Payment Gateway URL
@@ -137,7 +137,7 @@ const LIVE_BOOKEEY_PAYMENT_GATEWAY_URL = "https://pg.bookeey.com/internalapi/api
  * Type: String
  * CRITICAL: DO NOT CHANGE THIS VALUE.
  */
-const TEST_BOOKEEY_PAYMENT_REQUERY_URL = "https://apps.bookeey.com/pgapi/api/payment/paymentstatus";
+const TEST_BOOKEEY_PAYMENT_REQUERY_URL = "https://demo.bookeey.com/pgapi/api/payment/paymentstatus";
 
 /**
  * Live Bookeey Payment Requery URL
